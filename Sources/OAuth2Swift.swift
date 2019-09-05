@@ -103,7 +103,15 @@ open class OAuth2Swift: OAuthSwift {
                     this.client.credential.oauthTokenExpiresAt = Date(timeInterval: offset, since: Date())
                 }
                 success(this.client.credential, nil, responseParameters)
-            } else if let code = responseParameters["code"] {
+            }
+            else if let idToken = responseParameters["id_token"] {
+                this.client.credential.oauthToken = idToken.safeStringByRemovingPercentEncoding
+                if let expiresIn: String = responseParameters["expires_in"], let offset = Double(expiresIn) {
+                    this.client.credential.oauthTokenExpiresAt = Date(timeInterval: offset, since: Date())
+                }
+                success(this.client.credential, nil, responseParameters)
+            }
+            else if let code = responseParameters["code"] {
                 if !this.allowMissingStateCheck {
                     guard let responseState = responseParameters["state"] else {
                         failure?(OAuthSwiftError.missingState)
